@@ -10,6 +10,7 @@ class Cours(models.Model):
     preview = models.ImageField(upload_to='articles/', verbose_name='изображение', **NULLABLE)
     description = models.TextField(max_length=500, verbose_name='описание')
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE)
+    price = models.IntegerField(verbose_name='цена', default=200)
 
     def __str__(self):
         return self.title
@@ -26,6 +27,7 @@ class Lesson(models.Model):
     link = models.URLField(verbose_name='ссылка на видео', **NULLABLE)
     cours = models.ForeignKey(Cours, on_delete=models.CASCADE, **NULLABLE, verbose_name='курс')
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE)
+    price = models.IntegerField(verbose_name='цена', default=10)
 
     def __str__(self):
         return self.title
@@ -36,9 +38,10 @@ class Lesson(models.Model):
 
 
 class Payment(models.Model):
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, **NULLABLE, verbose_name='пользователь')
     date = models.DateField(default=now, verbose_name='дата оплаты')
-    summ = models.IntegerField(verbose_name='сумма оплаты')
+    summ = models.IntegerField(verbose_name='сумма оплаты', **NULLABLE)
     payment_method = models.CharField(max_length=20, verbose_name='способ оплаты', default='non-cash')
 
     cours = models.ForeignKey(Cours, on_delete=models.CASCADE, **NULLABLE, verbose_name='курс')
@@ -46,6 +49,8 @@ class Payment(models.Model):
 
 
 class Subscription(models.Model):
+
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, **NULLABLE, verbose_name='пользователь')
     cours = models.ForeignKey(Cours, on_delete=models.CASCADE, verbose_name='курс')
     is_active = models.BooleanField(verbose_name='активирована', default=True)
+    

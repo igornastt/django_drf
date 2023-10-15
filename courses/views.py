@@ -2,11 +2,14 @@ from rest_framework import viewsets, generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from courses.models import Cours, Lesson, Payment, Subscription
-from courses.serializers import CoursSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
+from courses.serializers import (CoursSerializer, LessonSerializer, PaymentSerializer, PaymentCreateSerializer,
+                                 SubscriptionSerializer)
 from courses.permissions import IsOwnerOrModerator
 from courses.paginators import CoursesPaginator
+from courses.tasks import sendmail
 
 
 class CoursViewSet(viewsets.ModelViewSet):
@@ -24,6 +27,12 @@ class CoursViewSet(viewsets.ModelViewSet):
             return Cours.objects.all()
         else:
             return Cours.objects.filter(owner=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        product_id = response.data['id']
+        sendmail.delay(product_id)
+        return response
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
@@ -64,6 +73,11 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
 class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated, IsOwnerOrModerator]
+
+
+class PaymentCreateAPIView(generics.CreateAPIView):
+    serializer_class = PaymentCreateSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class PaymentListAPIView(generics.ListAPIView):
