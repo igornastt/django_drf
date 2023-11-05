@@ -14,8 +14,7 @@ services:
       - POSTGRES_PASSWORD=1651
       - POSTGRES_DB=dj-drf
       - PGDATA=/var/lib/postgresql/data/pgdata
-    volumes:
-      - pg_data:/var/lib/postgresql/data/pgdata
+
     ports:
       - '5432:5432'
     healthcheck:
@@ -28,12 +27,10 @@ services:
     build: .
     tty: true
     env_file:
-      - .env.sample
-    command:  python manage.py runserver 0.0.0.0:8000
+      - .env
+    command:  python manage.py runserver
     ports:
       - '8000:8000'
-    volumes:
-      - .:/code
     depends_on:
       db:
         condition: service_healthy
@@ -53,6 +50,3 @@ services:
     depends_on:
       - redis
       - app
-
-volumes:
-  pg_data:
